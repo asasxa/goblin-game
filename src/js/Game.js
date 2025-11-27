@@ -1,3 +1,6 @@
+import { Score } from './Score.js';
+import { Board } from './Board.js';
+import { Cursor } from './Cursor.js';
 import goblinImg from '../img/goblin.png';
 import hammerImg from '../img/hammer.png';
 
