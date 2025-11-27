@@ -1,25 +1,29 @@
 export class Cursor {
-  constructor(hammerImgPath) {
-    this.hammer = new Image();
-    this.hammer.src = hammerImgPath;
-    this.hammer.style.position = 'absolute';
-    this.hammer.style.pointerEvents = 'none';
-    this.hammer.style.zIndex = '9999';
-    this.hammer.style.width = '40px';
-    document.body.appendChild(this.hammer);
-    this.hide();
+  constructor(imgPath) {
+    this.el = new Image();
+    this.el.src = imgPath;
+    this.el.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 40px;
+      pointer-events: none;
+      z-index: 10000;
+      display: none;
+    `;
+    document.body.appendChild(this.el);
+
+    this.el.onload = () => {
+      this.loaded = true;
+      this.el.style.display = 'block';
+    };
 
     document.addEventListener('mousemove', (e) => {
-      this.hammer.style.left = e.pageX - 20 + 'px';
-      this.hammer.style.top = e.pageY - 20 + 'px';
+      if (this.loaded) {
+        this.el.style.left = (e.clientX - 20) + 'px';
+        this.el.style.top = (e.clientY - 20) + 'px';
+        this.el.style.display = 'block';
+      }
     });
-  }
-
-  show() {
-    this.hammer.style.display = 'block';
-  }
-
-  hide() {
-    this.hammer.style.display = 'none';
   }
 }
