@@ -4,7 +4,7 @@ export class Board {
     this.cells = [];
     this.container = document.createElement('div');
     this.container.id = 'game-board';
-    document.body.appendChild(this.container);
+    document.body.append(this.container);
     this.createBoard();
   }
 
@@ -13,7 +13,7 @@ export class Board {
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.dataset.index = i;
-      this.container.appendChild(cell);
+      this.container.append(cell);
       this.cells.push(cell);
     }
   }
@@ -21,7 +21,7 @@ export class Board {
   showGoblin(goblinImg, index) {
     if (this.currentGoblin) this.cells[this.currentGoblin].innerHTML = '';
     this.cells[index].innerHTML = '';
-    this.cells[index].appendChild(goblinImg);
+    this.cells[index].append(goblinImg);
     this.currentGoblin = index;
   }
 

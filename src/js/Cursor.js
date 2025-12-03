@@ -11,7 +11,7 @@ export class Cursor {
       z-index: 10000;
       display: none;
     `;
-    document.body.appendChild(this.el);
+    document.body.append(this.el);
 
     this.el.onload = () => {
       this.loaded = true;

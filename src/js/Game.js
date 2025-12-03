@@ -12,7 +12,7 @@ export class Game {
     this.cursor = new Cursor(hammerImg);
     this.goblinElement = this.createGoblinElement();
     this.gameActive = true;
-    this.currentGoblinIndex = null;
+    this.lastGoblinIndex = null;
     this.timeoutId = null;
     this.setupEventListeners();
     this.scheduleNext();
@@ -32,7 +32,7 @@ export class Game {
       const cell = e.target.closest('.cell');
       if (!cell) return;
       const index = this.board.getCellIndex(cell);
-      if (index === this.currentGoblinIndex) {
+      if (index === this.lastGoblinIndex) {
         this.onHit();
       }
     });
@@ -40,14 +40,14 @@ export class Game {
 
   onHit() {
     this.score.addPoint();
-    this.hideGoblin();
+    this.clearGoblin();
     this.scheduleNext();
   }
 
   onMiss() {
     if (!this.gameActive) return;
     const isGameOver = this.score.addMiss();
-    this.hideGoblin();
+    this.clearGoblin();
     if (isGameOver) {
       this.endGame();
     } else {
@@ -55,31 +55,36 @@ export class Game {
     }
   }
 
-  hideGoblin() {
+  clearGoblin() {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
     this.board.hideGoblin();
-    this.currentGoblinIndex = null;
   }
 
   scheduleNext() {
     if (!this.gameActive) return;
-    const delay = 300 + Math.random() * 500;
     setTimeout(() => {
       this.showGoblin();
       this.timeoutId = setTimeout(() => this.onMiss(), GAMETIME_MS);
-    }, delay);
+    }, 300 + Math.random() * 500);
   }
 
   showGoblin() {
-    let newIndex;
-    do {
-      newIndex = Math.floor(Math.random() * TOTAL_CELLS);
-    } while (newIndex === this.currentGoblinIndex && TOTAL_CELLS > 1);
+    if (TOTAL_CELLS <= 0) return;
 
-    this.currentGoblinIndex = newIndex;
+    let newIndex;
+    if (TOTAL_CELLS === 1) {
+      newIndex = 0;
+    } else {
+      do {
+        newIndex = Math.floor(Math.random() * TOTAL_CELLS);
+      } while (newIndex === this.lastGoblinIndex);
+    }
+
+    this.lastGoblinIndex = newIndex;
+    this.board.hideGoblin();
     this.board.showGoblin(this.goblinElement.cloneNode(true), newIndex);
   }
 
