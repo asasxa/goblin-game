@@ -1,18 +1,21 @@
 import { Score } from './Score.js';
 import { Board } from './Board.js';
 import { Cursor } from './Cursor.js';
+import { BOARD_SIZE, TOTAL_CELLS, GAMETIME_MS } from './constants.js';
 import goblinImg from '../img/goblin.png';
 import hammerImg from '../img/hammer.png';
 
 export class Game {
   constructor() {
     this.score = new Score();
-    this.board = new Board(4);
+    this.board = new Board(BOARD_SIZE);
     this.cursor = new Cursor(hammerImg);
     this.goblinElement = this.createGoblinElement();
     this.gameActive = true;
+    this.currentGoblinIndex = null;
+    this.timeoutId = null;
     this.setupEventListeners();
-    this.start();
+    this.scheduleNext();
   }
 
   createGoblinElement() {
@@ -37,15 +40,14 @@ export class Game {
 
   onHit() {
     this.score.addPoint();
-    this.board.hideGoblin();
-    clearTimeout(this.timeoutId);
+    this.hideGoblin();
     this.scheduleNext();
   }
 
   onMiss() {
     if (!this.gameActive) return;
     const isGameOver = this.score.addMiss();
-    this.board.hideGoblin();
+    this.hideGoblin();
     if (isGameOver) {
       this.endGame();
     } else {
@@ -53,36 +55,54 @@ export class Game {
     }
   }
 
+  hideGoblin() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+    this.board.hideGoblin();
+    this.currentGoblinIndex = null;
+  }
+
   scheduleNext() {
     if (!this.gameActive) return;
+    const delay = 300 + Math.random() * 500;
     setTimeout(() => {
       this.showGoblin();
-      this.timeoutId = setTimeout(() => this.onMiss(), 1000);
-    }, 500 + Math.random() * 1000);
+      this.timeoutId = setTimeout(() => this.onMiss(), GAMETIME_MS);
+    }, delay);
   }
 
   showGoblin() {
-    const index = Math.floor(Math.random() * 16);
-    this.currentGoblinIndex = index;
-    this.board.showGoblin(this.goblinElement.cloneNode(true), index);
-  }
+    let newIndex;
+    do {
+      newIndex = Math.floor(Math.random() * TOTAL_CELLS);
+    } while (newIndex === this.currentGoblinIndex && TOTAL_CELLS > 1);
 
-  start() {
-    this.scheduleNext();
+    this.currentGoblinIndex = newIndex;
+    this.board.showGoblin(this.goblinElement.cloneNode(true), newIndex);
   }
 
   endGame() {
     this.gameActive = false;
     const final = document.createElement('div');
-    final.innerHTML = `<h2>Game Over!</h2><p>Final Score: ${this.score.score}</p>`;
-    final.style.position = 'fixed';
-    final.style.top = '50%';
-    final.style.left = '50%';
-    final.style.transform = 'translate(-50%, -50%)';
-    final.style.background = 'white';
-    final.style.padding = '20px';
-    final.style.border = '2px solid red';
-    final.style.zIndex = '1000';
-    document.body.appendChild(final);
+    final.innerHTML = `
+      <h2>Game Over!</h2>
+      <p>Final Score: ${this.score.score}</p>
+    `;
+    final.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border: 2px solid red;
+      border-radius: 8px;
+      z-index: 1000;
+      font-family: sans-serif;
+      text-align: center;
+    `;
+    document.body.append(final);
   }
 }
